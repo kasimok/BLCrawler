@@ -18,6 +18,7 @@
 package crawler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Poller;
@@ -34,10 +35,11 @@ public class Downloader {
     @Autowired
     private RestTemplate template;
 
-    @InboundChannelAdapter(value = "channel1", poller = @Poller("downloadTrigger"))
+    @InboundChannelAdapter(value = "channel1", poller = @Poller("downloadIndexTrigger"))
     public ResponseEntity<String> download() {
         String url = config.getUrl();
         ResponseEntity<String> entity = template.getForEntity(url, String.class);
         return entity;
     }
+
 }

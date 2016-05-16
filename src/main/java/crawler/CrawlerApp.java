@@ -89,12 +89,12 @@ public class CrawlerApp {
     }
 
     /**
-     * Trigger the crawler job periodically.
+     * Trigger the crawler for index job periodically.
      *
      * @return
      */
     @Bean
-    public PollerMetadata downloadTrigger() {
+    public PollerMetadata downloadIndexTrigger() {
         PeriodicTrigger trigger = new PeriodicTrigger(config.getDownloadInterval());
         trigger.setFixedRate(true);
         PollerMetadata pollerMetadata = new PollerMetadata();
@@ -102,6 +102,7 @@ public class CrawlerApp {
         pollerMetadata.setMaxMessagesPerPoll(1);
         return pollerMetadata;
     }
+
 
     @Bean
     public MessageChannel channel1() {
