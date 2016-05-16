@@ -1,9 +1,13 @@
+DROP TABLE IF EXISTS models;
+DROP TABLE IF EXISTS models_artwork;
+
+
 -- USERS
 CREATE TABLE IF NOT EXISTS models (
   model_fullname VARCHAR(45),
   nickname       VARCHAR(45) NOT NULL,
   date_of_birth  DATE,
-  update_time    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  update_time    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (nickname)
 );
 -- Trigger
@@ -19,7 +23,7 @@ BEGIN
 END;
 -- ART_WORK
 CREATE TABLE IF NOT EXISTS models_artwork (
-  artwork_id         SERIAL,
+  artwork_id         INT PRIMARY KEY NOT NULL,
   title              VARCHAR(255),
   resolution_x       INT(6),
   resolution_y       INT(6),
@@ -27,9 +31,8 @@ CREATE TABLE IF NOT EXISTS models_artwork (
   thread_address     VARCHAR(255),
   thumbnail_img_list TEXT,
   model_nickname     VARCHAR(45) NOT NULL,
-  date_created       DATE,
-  update_time        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (artwork_id),
+  data_created       DATETIME,
+  update_time        DATETIME   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT `FK_MODEL` FOREIGN KEY (`model_nickname`
   ) REFERENCES `models` (`nickname`
   )

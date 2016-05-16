@@ -52,9 +52,14 @@ public class ArtworkRepository {
         artwork.setResolutionX(rs.getInt("resolution_x"));
         artwork.setResolutionY(rs.getInt("resolution_y"));
         artwork.setAuthorComment(rs.getString("author_comment"));
-        artwork.setThreadAddress(rs.getURL("thread_address"));
+        try {
+            artwork.setThreadAddress(new URL(rs.getString("thread_address")));
+        } catch (MalformedURLException e) {
+            log.error("Bad URL");
+            artwork.setThreadAddress(null);
+        }
         ArrayList<URL> arr = new ArrayList<>();
-        if (rs.getString("thumbnail_img_list")!=null) {
+        if (!StringUtils.isEmpty(rs.getString("thumbnail_img_list"))) {
             for (String thumbnail_img_list_entry : StringUtils.split(rs.getString("thumbnail_img_list"), ",")) {
                 try {
                     arr.add(new URL(thumbnail_img_list_entry));
@@ -65,6 +70,7 @@ public class ArtworkRepository {
         }
         artwork.setThumbnailImgList(arr);
         artwork.setModelNickname(rs.getString("model_nickname"));
+        artwork.setDataCreated(rs.getDate("data_created"));
         return artwork;
     };
 
@@ -77,6 +83,7 @@ public class ArtworkRepository {
                     new Object[]{artId},
                     this.ArtworkMapper);
         } catch (DataAccessException e) {
+//            log.error(e.getMessage());
             return null;
         }
         return entry;
@@ -99,7 +106,7 @@ public class ArtworkRepository {
                 "thread_address," +
                 "thumbnail_img_list," +
                 "model_nickname," +
-                "date_created)"+
+                "data_created)"+
                 "VALUES " +
                 "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, new Object[]{

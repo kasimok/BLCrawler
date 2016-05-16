@@ -16,10 +16,6 @@ package Models;/*
  * specific language governing permissions and limitations under the License.
  */
 
-import org.springframework.jdbc.core.RowMapper;
-
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
