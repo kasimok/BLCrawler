@@ -41,5 +41,12 @@ public class Downloader {
         ResponseEntity<String> entity = template.getForEntity(url, String.class);
         return entity;
     }
+    //TODO: Remove these 2 methods only used in unit test.
+    public void setConfig(CrawlerConfig config) {
+        this.config = config;
+    }
 
+    public void setTemplate(RestTemplate template) {
+        this.template = template;
+    }
 }

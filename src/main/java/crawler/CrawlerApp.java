@@ -62,23 +62,16 @@ public class CrawlerApp {
 
     @MessageEndpoint
     public static class Endpoint {
-        @Autowired
-        private ArtworkRepository artworkRepository;
-        @Autowired
-        private ModelRepository modelRepository;
-
-
-        @ServiceActivator (inputChannel = "channel4")
-        public void logAndCheck(Artwork artwork) {
-            if (modelRepository.getModelByName(artwork.getModelNickname())==null) {
-                LOG.info(String.format("Model=%s,not exist in db,inserting", artwork.getModelNickname()));
-                modelRepository.insertModel(new Model(
-                        artwork.getModelNickname()
-                ));
-            }
-            if (artworkRepository.getArtwork(artwork.getArtId())==null) {
-                LOG.info("Artwork={},not exist in db,inserting", artwork);
-                artworkRepository.insertArtwork(artwork);
+        /**
+         * Send notificate if passed in artwork is not null;
+         * @param artwork
+         */
+        @ServiceActivator (inputChannel = "channel5")
+        public void sendNotification(Artwork artwork) {
+            if (artwork!=null) {
+                System.out.println("Send notification" + artwork.toString());
+            }else{
+                System.out.println("Bypass!");
             }
         }
     }
