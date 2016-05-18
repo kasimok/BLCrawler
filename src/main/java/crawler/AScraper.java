@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 
 @MessageEndpoint
 public class AScraper {
-    private final Pattern patter = Pattern.compile("\\[Beautyleg\\][^a-z0-9]*(?<year>\\d{4})\\.(?<month>\\d{2})\\.(?<day>\\d{2})\\sNo\\.(?<id>\\d{3,5})\\s+(?<model>.{3,20})");
+    private final Pattern patter = Pattern.compile("\\[Beautyleg\\][^a-z0-9]*(?<year>\\d{4})\\.(?<month>\\d{2})\\.(?<day>\\d{2})\\sNo\\.(?<id>\\d{3,5})\\s+(?<model>.{2,20})");
     private final String ANCHOR_TEXT_PATTERN = "Beautyleg";
     private static final Logger LOG = LoggerFactory.getLogger(AScraper.class);
 
@@ -147,7 +147,8 @@ public class AScraper {
                     artwork.getModelNickname()
             ));
         }
-        if (artworkRepository.getArtwork(artwork.getArtId()) == null) {
+        Artwork artwork_db =artworkRepository.getArtwork(artwork.getArtId());
+        if (artwork_db == null) {
             ThreadPageScraper threadPageScraper = new ThreadPageScraper();
             TreeMap<String, Object> results = threadPageScraper.scrape(artwork.getThreadAddress().toString());
             artwork.setThumbnailImgList((ArrayList<URL>) results.get(ThreadPageScraper.KEY_THUMBNAILS));
@@ -155,10 +156,12 @@ public class AScraper {
             artwork.setResolutionX((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_X));
             artwork.setResolutionY((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_Y));
             LOG.info("Artwork={},not exist in db,inserting", artwork);
+//            EmailHandler emailHandler=new EmailHandler();
+//            emailHandler.sendNewThreadNotification(artwork,"kasimok@163.com");
             artworkRepository.insertArtwork(artwork);
             return artwork;
         }else{
-            return artwork;
+            return artwork_db;
         }
     }
 }

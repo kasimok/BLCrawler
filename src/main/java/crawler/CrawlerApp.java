@@ -15,7 +15,8 @@ package crawler;/*
  */
 
 import Models.Artwork;
-import Models.Model;
+import com.sun.tools.javac.util.List;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
@@ -36,7 +39,9 @@ import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 @Configuration
 @ComponentScan
@@ -68,11 +73,32 @@ public class CrawlerApp {
          */
         @ServiceActivator (inputChannel = "channel5")
         public void sendNotification(Artwork artwork) {
-            if (artwork!=null) {
-                System.out.println("Send notification" + artwork.toString());
-            }else{
-                System.out.println("Bypass!");
+            RestTemplate restTemplate = new RestTemplate();
+            File f = new File("No."+String.valueOf(artwork.getArtId()));
+            if (!f.exists()||!f.isDirectory()) {
+                LOG.info("Mkdir:"+"No." + String.valueOf(artwork.getArtId()));
+                new File("No." + String.valueOf(artwork.getArtId())).mkdir();
             }
+
+            artwork.getThumbnailImgList().parallelStream().forEach(o -> {
+                String baseName = FilenameUtils.getBaseName(o.toString());
+                String extension = FilenameUtils.getExtension(o.toString());
+                File img = new File("No."+String.valueOf(artwork.getArtId())+File.separator+baseName+"."+extension);
+                if (img.isFile()&&img.exists()) {
+                    LOG.info("Skipping File "+ img.getPath());
+                }else{
+                    byte[] imageBytes = restTemplate.getForObject(o.toString(), byte[].class);
+                    try {
+                        Files.write(img.toPath(), imageBytes);
+                        LOG.info("Downloaded "+img.toPath());
+                    } catch (IOException e) {
+                        LOG.error("IOE");
+                    }
+                }
+
+            });
+            LOG.info("Done checking "+f.getPath());
+
         }
     }
 
@@ -125,5 +151,16 @@ public class CrawlerApp {
         PollerMetadata pollerMetadata = new PollerMetadata();
         pollerMetadata.setTrigger(trigger);
         return pollerMetadata;
+    }
+
+
+    @Bean
+    public RestTemplate restTemplate(List<HttpMessageConverter<?>> messageConverters) {
+        return new RestTemplate(messageConverters);
+    }
+
+    @Bean
+    public ByteArrayHttpMessageConverter byteArrayHttpMessageConverter() {
+        return new ByteArrayHttpMessageConverter();
     }
 }
