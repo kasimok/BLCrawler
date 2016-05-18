@@ -1,28 +1,84 @@
-<HTML>
-<HEAD>
+<!DOCTYPE html>
+<html>
+<head>
     <TITLE>$title</TITLE>
-    <style>
-        li {
-            list-style: none;
-        }
-    </style>
-</HEAD>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<style>
+
+    html, body ,*{
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 940px;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
 
 
-<BODY>
-<CENTER>
-    <B>A new artwork by $model has published.</B>
+    .header {
+        background-color: #333;
+        height: 60px;
+    }
+    .header p{
+        font-family: 'Raleway', sans-serif;
+        text-transform: uppercase;
+        font-size: 20px;
+        margin: 10 0;
+        padding: 0px;
+        position: absolute;
+        top: 20px;
+        color: white;
+    }
 
-    <BR/>
-    $comment
-    <BR/>
+    .clearfix {
+        clear: both;
+    }
+
+    .footer {
+        background-color: #333;
+        color: #fff;
+        padding: 0;
+    }
+
+    .footer p {
+        font-family: 'Open Sans', sans-serif;
+        text-transform: uppercase;
+        font-size: 11px;
+        margin: 0px;
+        padding: 0px;
+
+    }
+    img{
+        width: 100%;
+        z-index: 0;
+        padding: 0px;
+        margin: 0px;
+        display: block
+    }
+
+</style>
+<body>
+<div class="header">
+    <div class="container">
+        <p>A new artwork by <b>$model</b> has published.</p>
+    </div>
+</div>
     #foreach( $img_url in $thumbnailList )
-        <ul>
-            <li><img src=$img_url alt="#"></li>
-        </ul>
+    <img src=$img_url alt="#">
     #end
 
-</CENTER>
+<div class="footer">
+    <div class="container">
+        <br>
+        <p>$comment</p>
+        <br>
+        <p>© Beautyleg 2016</p>
+        <br>
+    </div>
+</div>
 
-</BODY>
-</HTML>
+</body>
+</html>
