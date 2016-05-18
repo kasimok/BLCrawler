@@ -1,0 +1,28 @@
+<HTML>
+<HEAD>
+    <TITLE>$title</TITLE>
+    <style>
+        li {
+            list-style: none;
+        }
+    </style>
+</HEAD>
+
+
+<BODY>
+<CENTER>
+    <B>A new artwork by $model has published.</B>
+
+    <BR/>
+    $comment
+    <BR/>
+    #foreach( $img_url in $thumbnailList )
+        <ul>
+            <li><img src=$img_url alt="#"></li>
+        </ul>
+    #end
+
+</CENTER>
+
+</BODY>
+</HTML>

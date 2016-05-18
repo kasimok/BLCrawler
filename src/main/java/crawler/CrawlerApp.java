@@ -67,6 +67,7 @@ public class CrawlerApp {
 
     @MessageEndpoint
     public static class Endpoint {
+        static boolean download=false;
         /**
          * Send notificate if passed in artwork is not null;
          *
@@ -74,34 +75,36 @@ public class CrawlerApp {
          */
         @ServiceActivator (inputChannel = "channel5")
         public void sendNotification(Artwork artwork) {
-            RestTemplate restTemplate = new RestTemplate();
-            File artworkFolder = new File("Beauty" + File.separator + String.format("No.%03d", artwork.getArtId()));
-            if (!artworkFolder.exists() || !artworkFolder.isDirectory()) {
-                LOG.debug(artworkFolder.getPath());
-                artworkFolder.mkdirs();
-            }
-            artwork.getThumbnailImgList().parallelStream().forEach(o -> {
-                String baseName = FilenameUtils.getBaseName(o.toString());
-                String extension = FilenameUtils.getExtension(o.toString());
-                boolean isJpeg = extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg");
-                File img = new File(artworkFolder + File.separator + baseName + "." + extension);
-                if (img.isFile() && img.exists()) {
-                    LOG.debug("Skipping existing file " + img.getPath());
-                } else if (!isJpeg) {
-                    LOG.debug("Skipping none jpg file " + baseName + "." + extension);
-                } else {
-                    byte[] imageBytes = restTemplate.getForObject(o.toString(), byte[].class);
-                    try {
-                        Files.write(img.toPath(), imageBytes);
-                        LOG.info("Downloaded new image: " + img.toPath());
-                    } catch (IOException e) {
-                        LOG.error("IOE");
-                    }
+            if (download) {
+                RestTemplate restTemplate = new RestTemplate();
+                File artworkFolder = new File("Beauty" + File.separator + String.format("No.%03d", artwork.getArtId()));
+                if (!artworkFolder.exists() || !artworkFolder.isDirectory()) {
+                    LOG.debug(artworkFolder.getPath());
+                    artworkFolder.mkdirs();
                 }
+                artwork.getThumbnailImgList().parallelStream().forEach(o -> {
+                    String baseName = FilenameUtils.getBaseName(o.toString());
+                    String extension = FilenameUtils.getExtension(o.toString());
+                    boolean isJpeg = extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg");
+                    File img = new File(artworkFolder + File.separator + baseName + "." + extension);
+                    if (img.isFile() && img.exists()) {
+                        LOG.debug("Skipping existing file " + img.getPath());
+                    } else if (!isJpeg) {
+                        LOG.debug("Skipping none jpg file " + baseName + "." + extension);
+                    } else {
+                        byte[] imageBytes = restTemplate.getForObject(o.toString(), byte[].class);
+                        try {
+                            Files.write(img.toPath(), imageBytes);
+                            LOG.info("Downloaded new image: " + img.toPath());
+                        } catch (IOException e) {
+                            LOG.error("IOE");
+                        }
+                    }
 
-            });
-            LOG.debug("Done checking " + artworkFolder.getPath());
+                });
+                LOG.debug("Done checking " + artworkFolder.getPath());
 
+            }
         }
     }
 
