@@ -156,8 +156,6 @@ public class AScraper {
             artwork.setResolutionX((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_X));
             artwork.setResolutionY((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_Y));
             LOG.info("Artwork={},not exist in db,inserting", artwork);
-//            EmailHandler emailHandler=new EmailHandler();
-//            emailHandler.sendNewThreadNotification(artwork,"kasimok@163.com");
             artworkRepository.insertArtwork(artwork);
             return artwork;
         }else{

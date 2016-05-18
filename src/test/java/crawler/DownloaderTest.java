@@ -45,5 +45,9 @@ public class DownloaderTest {
 //        System.out.println(threadPageScraper.scrape(payload).toString());
     }
 
-
+    @Test
+    public void name() throws Exception {
+        System.out.println(String.format("No.%03d", 1));
+        System.out.println(String.format("No.%03d", 1234));
+    }
 }

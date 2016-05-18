@@ -15,7 +15,6 @@ package crawler;/*
  */
 
 import Models.Artwork;
-import com.sun.tools.javac.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +41,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
 @Configuration
 @ComponentScan
@@ -69,35 +69,38 @@ public class CrawlerApp {
     public static class Endpoint {
         /**
          * Send notificate if passed in artwork is not null;
+         *
          * @param artwork
          */
         @ServiceActivator (inputChannel = "channel5")
         public void sendNotification(Artwork artwork) {
             RestTemplate restTemplate = new RestTemplate();
-            File f = new File("No."+String.valueOf(artwork.getArtId()));
-            if (!f.exists()||!f.isDirectory()) {
-                LOG.info("Mkdir:"+"No." + String.valueOf(artwork.getArtId()));
-                new File("No." + String.valueOf(artwork.getArtId())).mkdir();
+            File artworkFolder = new File("Beauty" + File.separator + String.format("No.%03d", artwork.getArtId()));
+            if (!artworkFolder.exists() || !artworkFolder.isDirectory()) {
+                LOG.debug(artworkFolder.getPath());
+                artworkFolder.mkdirs();
             }
-
             artwork.getThumbnailImgList().parallelStream().forEach(o -> {
                 String baseName = FilenameUtils.getBaseName(o.toString());
                 String extension = FilenameUtils.getExtension(o.toString());
-                File img = new File("No."+String.valueOf(artwork.getArtId())+File.separator+baseName+"."+extension);
-                if (img.isFile()&&img.exists()) {
-                    LOG.info("Skipping File "+ img.getPath());
-                }else{
+                boolean isJpeg = extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg");
+                File img = new File(artworkFolder + File.separator + baseName + "." + extension);
+                if (img.isFile() && img.exists()) {
+                    LOG.debug("Skipping existing file " + img.getPath());
+                } else if (!isJpeg) {
+                    LOG.debug("Skipping none jpg file " + baseName + "." + extension);
+                } else {
                     byte[] imageBytes = restTemplate.getForObject(o.toString(), byte[].class);
                     try {
                         Files.write(img.toPath(), imageBytes);
-                        LOG.info("Downloaded "+img.toPath());
+                        LOG.info("Downloaded new image: " + img.toPath());
                     } catch (IOException e) {
                         LOG.error("IOE");
                     }
                 }
 
             });
-            LOG.info("Done checking "+f.getPath());
+            LOG.debug("Done checking " + artworkFolder.getPath());
 
         }
     }
