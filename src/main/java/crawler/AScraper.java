@@ -20,6 +20,7 @@ package crawler;
  * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/15.
  */
 
+import Mail.MailService;
 import Models.Artwork;
 import Models.Model;
 import org.jsoup.Jsoup;
@@ -31,6 +32,10 @@ import org.jsoup.select.NodeVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -38,6 +43,7 @@ import org.springframework.integration.annotation.Splitter;
 import org.springframework.integration.annotation.Transformer;
 import org.thymeleaf.util.StringUtils;
 
+import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -155,6 +161,14 @@ public class AScraper {
             artwork.setAuthorComment((String) results.get(ThreadPageScraper.KEY_AUTHOR_DESCRIPTION));
             artwork.setResolutionX((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_X));
             artwork.setResolutionY((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_Y));
+            LOG.info("Artwork={},new post, Notify user...", artwork);
+            ApplicationContext applicationContext = new ClassPathXmlApplicationContext("mail.xml");
+            MailService mailService = (MailService) applicationContext.getBean("orderManager");
+            try {
+                mailService.sendHtmlMailNotification("kasimok@163.com", String.valueOf(mailService.notifyNewArtworkPost(artwork)));
+            } catch (MessagingException e) {
+                return artwork;
+            }
             LOG.info("Artwork={},not exist in db,inserting", artwork);
             artworkRepository.insertArtwork(artwork);
             return artwork;

@@ -38,7 +38,7 @@ import java.util.List;
  */
 @Repository
 public class ArtworkRepository {
-    private static final Logger log = LoggerFactory.getLogger(ArtworkRepository.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ArtworkRepository.class);
     @Autowired
     protected JdbcTemplate jdbcTemplate;
 
@@ -55,7 +55,7 @@ public class ArtworkRepository {
         try {
             artwork.setThreadAddress(new URL(rs.getString("thread_address")));
         } catch (MalformedURLException e) {
-            log.error("Bad URL");
+            LOG.error("Bad URL");
             artwork.setThreadAddress(null);
         }
         ArrayList<URL> arr = new ArrayList<>();
@@ -64,7 +64,7 @@ public class ArtworkRepository {
                 try {
                     arr.add(new URL(thumbnail_img_list_entry));
                 } catch (MalformedURLException e) {
-                    log.error(String.format("Fail to cast [%s] to url", thumbnail_img_list_entry));
+                    LOG.error(String.format("Fail to cast [%s] to url", thumbnail_img_list_entry));
                 }
             }
         }
@@ -83,7 +83,7 @@ public class ArtworkRepository {
                     new Object[]{artId},
                     this.ArtworkMapper);
         } catch (DataAccessException e) {
-//            log.error(e.getMessage());
+//            LOG.error(e.getMessage());
             return null;
         }
         return entry;
