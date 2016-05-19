@@ -15,7 +15,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package crawler;
+package Reposities;
 
 import Models.Model;
 import org.slf4j.Logger;
@@ -26,13 +26,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.util.StringUtils;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/15.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/15.
  */
 @Repository
 public class ModelRepository {

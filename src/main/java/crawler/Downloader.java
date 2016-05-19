@@ -25,7 +25,7 @@ import org.springframework.integration.annotation.Poller;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/15.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/15.
  */
 @MessageEndpoint
 public class Downloader {
@@ -41,7 +41,6 @@ public class Downloader {
         ResponseEntity<String> entity = template.getForEntity(url, String.class);
         return entity;
     }
-    //TODO: Remove these 2 methods only used in unit test.
     public void setConfig(CrawlerConfig config) {
         this.config = config;
     }

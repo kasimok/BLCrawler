@@ -1,19 +1,7 @@
-package crawler;/*
- * Copyright 2014 NAKANO Hideo.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package crawler;
 
+import Mail.MailConfig;
+import Mail.MailService;
 import Models.Artwork;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -21,13 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
@@ -41,13 +29,17 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.List;
 
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration
 @EnableConfigurationProperties
+@SpringBootApplication
 public class CrawlerApp {
+
+    @Autowired
+    private ApplicationContext appContext;
+
     private static Logger LOG = LoggerFactory.getLogger(CrawlerApp.class);
 
     public static void main(String[] args) throws Exception {
@@ -152,21 +144,18 @@ public class CrawlerApp {
     // <int:poller id="poller" default="true" fixed-rate="10"/>
     @Bean (name = PollerMetadata.DEFAULT_POLLER)
     public PollerMetadata poller() {
+        ApplicationContext ctx =
+                new AnnotationConfigApplicationContext(MailConfig.class);
+        MailService ms = ctx.getBean(MailService.class);
+        if (!ms.checkMailServiceAvailable()) {
+            LOG.error("Failed to connect to smtp server, shutting down.");
+            LOG.error("Bye.");
+            System.exit(-1);
+        }
         PeriodicTrigger trigger = new PeriodicTrigger(10);
         trigger.setFixedRate(true);
         PollerMetadata pollerMetadata = new PollerMetadata();
         pollerMetadata.setTrigger(trigger);
         return pollerMetadata;
-    }
-
-
-    @Bean
-    public RestTemplate restTemplate(List<HttpMessageConverter<?>> messageConverters) {
-        return new RestTemplate(messageConverters);
-    }
-
-    @Bean
-    public ByteArrayHttpMessageConverter byteArrayHttpMessageConverter() {
-        return new ByteArrayHttpMessageConverter();
     }
 }

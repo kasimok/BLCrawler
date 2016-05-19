@@ -20,7 +20,7 @@ import java.util.Date;
 
 /**
  * This is for models only.
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/15.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/15.
  */
 public class Model {
     private String modelFullname;

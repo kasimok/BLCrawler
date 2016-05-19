@@ -17,7 +17,7 @@
  */
 package crawler;
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/15.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/15.
  */
 
 import org.jsoup.Jsoup;

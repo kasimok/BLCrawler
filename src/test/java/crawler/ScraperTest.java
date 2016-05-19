@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import static org.junit.Assert.*;
 
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/17.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/17.
  */
 public class ScraperTest {
     @org.junit.Before

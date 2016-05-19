@@ -17,7 +17,7 @@
  */
 package Mail;
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/18.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/18.
  */
 
 import Models.Artwork;
@@ -35,11 +35,12 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.StringWriter;
 import java.util.Calendar;
-import java.util.Date;
 
 public class MailService {
     private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
+
     private JavaMailSenderImpl mailSender;
+
     private SimpleMailMessage templateMessage;
 
     public void setMailSender(JavaMailSenderImpl mailSender) {
@@ -48,6 +49,14 @@ public class MailService {
 
     public void setTemplateMessage(SimpleMailMessage templateMessage) {
         this.templateMessage = templateMessage;
+    }
+
+    public SimpleMailMessage getTemplateMessage() {
+        return templateMessage;
+    }
+
+    public JavaMailSenderImpl getMailSender() {
+        return mailSender;
     }
 
     public boolean sendTextMailNotification(String to, String text) {
@@ -65,8 +74,8 @@ public class MailService {
     }
 
     public boolean sendHtmlMailNotification(String[] to, String text) throws MessagingException {
-        MimeMessage mimeMessage=this.mailSender.createMimeMessage();
-        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage,true,"UTF-8");
+        MimeMessage mimeMessage = this.mailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
         messageHelper.setTo(to);
         messageHelper.setFrom(this.templateMessage.getFrom());
         messageHelper.setSubject(this.templateMessage.getSubject());
@@ -86,19 +95,37 @@ public class MailService {
      * @return
      */
 
-    public StringWriter notifyNewArtworkPost(Artwork artwork) {
+    public StringWriter genNotifyForNewArtworkPost(Artwork artwork) {
         VelocityEngine ve = new VelocityEngine();
         ve.init();
         VelocityContext context = new VelocityContext();
         context.put("thumbnailList", artwork.getThumbnailImgList());
-        context.put("model",artwork.getModelNickname());
-        context.put("comment",artwork.getAuthorComment());
-        context.put("title",artwork.getTitle());
+        context.put("model", artwork.getModelNickname());
+        context.put("comment", artwork.getAuthorComment());
+        context.put("title", artwork.getTitle());
         context.put("year", Calendar.getInstance().get(Calendar.YEAR));
         Template t = ve.getTemplate("src/main/resources/email_templates/email_html.vm");
         StringWriter writer = new StringWriter();
         t.merge(context, writer);
         return writer;
     }
+
+    /**
+     * check if the email service is alive.
+     *
+     * @return
+     */
+    public boolean checkMailServiceAvailable() {
+        try {
+            mailSender.testConnection();
+        } catch (MessagingException e) {
+            LOG.error(e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+
+
 
 }

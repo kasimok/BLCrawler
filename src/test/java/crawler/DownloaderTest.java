@@ -13,7 +13,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/17.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/17.
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)

@@ -17,12 +17,15 @@
  */
 package crawler;
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/15.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/15.
  */
 
+import Mail.MailConfig;
 import Mail.MailService;
 import Models.Artwork;
 import Models.Model;
+import Reposities.ArtworkRepository;
+import Reposities.ModelRepository;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -32,10 +35,9 @@ import org.jsoup.select.NodeVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -55,6 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @MessageEndpoint
+@ComponentScan ({"./"})
 public class AScraper {
     private final Pattern patter = Pattern.compile("\\[Beautyleg\\][^a-z0-9]*(?<year>\\d{4})\\.(?<month>\\d{2})\\.(?<day>\\d{2})\\sNo\\.(?<id>\\d{3,5})\\s+(?<model>.{2,20})");
     private final String ANCHOR_TEXT_PATTERN = "Beautyleg";
@@ -162,10 +165,11 @@ public class AScraper {
             artwork.setResolutionX((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_X));
             artwork.setResolutionY((Integer) results.get(ThreadPageScraper.KEY_RESOLUTION_Y));
             LOG.info("Artwork={},new post, Notify user...", artwork);
-            ApplicationContext applicationContext = new ClassPathXmlApplicationContext("mail.xml");
-            MailService mailService = (MailService) applicationContext.getBean("orderManager");
+            ApplicationContext ctx =
+                    new AnnotationConfigApplicationContext(MailConfig.class);
+            MailService mailService = ctx.getBean(MailService.class);
             try {
-                mailService.sendHtmlMailNotification("kasimok@163.com;wangxinyz@hotmail.com".split(";"), String.valueOf(mailService.notifyNewArtworkPost(artwork)));
+                mailService.sendHtmlMailNotification("kasimok@163.com".split(";"), String.valueOf(mailService.genNotifyForNewArtworkPost(artwork)));
             } catch (MessagingException e) {
                 return artwork;
             }

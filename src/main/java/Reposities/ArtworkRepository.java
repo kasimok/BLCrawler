@@ -15,12 +15,13 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package crawler;
+package Reposities;
 
 import Models.Artwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -34,9 +35,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by evilisn_jiang(evilisn_jiang@trendmicro.com.cn)) on 2016/5/15.
+ * Created by evilisn(kasimok@163.com)) on 2016/5/15.
  */
 @Repository
+@ComponentScan ({"./"})
 public class ArtworkRepository {
     private static final Logger LOG = LoggerFactory.getLogger(ArtworkRepository.class);
     @Autowired
@@ -122,9 +124,36 @@ public class ArtworkRepository {
         });
     }
 
-    public List<Integer> getExistedArtWorkIds(){
-        String SQL = "SELECT `artwork_id` FROM "+TABLE_NAME;
-        List<Integer> data = this.jdbcTemplate.queryForList(SQL,Integer.class);
+    public List<Artwork> getAllPostOfModel(String modelNickname){
+        String SQL = "SELECT * FROM "+TABLE_NAME+ " WHERE `model_nickname`=? ORDER BY `artwork_id` desc COLLATE NOCASE";
+        List<Artwork> data = this.jdbcTemplate.query(SQL, new Object[]{modelNickname}, (rs, i) -> {
+            Artwork artwork=new Artwork();
+            artwork.setArtId(rs.getInt("artwork_id"));
+            artwork.setTitle(rs.getString("title"));
+            artwork.setResolutionX(rs.getInt("resolution_x"));
+            artwork.setResolutionY(rs.getInt("resolution_y"));
+            artwork.setAuthorComment(rs.getString("author_comment"));
+            try {
+                artwork.setThreadAddress(new URL(rs.getString("thread_address")));
+            } catch (MalformedURLException e) {
+                LOG.error("Bad URL");
+                artwork.setThreadAddress(null);
+            }
+            ArrayList<URL> arr = new ArrayList<>();
+            if (!StringUtils.isEmpty(rs.getString("thumbnail_img_list"))) {
+                for (String thumbnail_img_list_entry : StringUtils.split(rs.getString("thumbnail_img_list"), ",")) {
+                    try {
+                        arr.add(new URL(thumbnail_img_list_entry));
+                    } catch (MalformedURLException e) {
+                        LOG.error(String.format("Fail to cast [%s] to url", thumbnail_img_list_entry));
+                    }
+                }
+            }
+            artwork.setThumbnailImgList(arr);
+            artwork.setModelNickname(rs.getString("model_nickname"));
+            artwork.setDataCreated(rs.getDate("data_created"));
+            return artwork;
+        });
         return data;
     }
 
