@@ -75,7 +75,7 @@
         <br>
         <p>$comment</p>
         <br>
-        <p>© Beautyleg 2016</p>
+        <p>&copy; Beautyleg $year</p>
         <br>
     </div>
 </div>

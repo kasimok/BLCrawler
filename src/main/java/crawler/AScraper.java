@@ -165,7 +165,7 @@ public class AScraper {
             ApplicationContext applicationContext = new ClassPathXmlApplicationContext("mail.xml");
             MailService mailService = (MailService) applicationContext.getBean("orderManager");
             try {
-                mailService.sendHtmlMailNotification("kasimok@163.com", String.valueOf(mailService.notifyNewArtworkPost(artwork)));
+                mailService.sendHtmlMailNotification("kasimok@163.com;wangxinyz@hotmail.com".split(";"), String.valueOf(mailService.notifyNewArtworkPost(artwork)));
             } catch (MessagingException e) {
                 return artwork;
             }

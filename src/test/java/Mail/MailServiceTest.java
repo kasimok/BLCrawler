@@ -33,7 +33,7 @@ public class MailServiceTest {
         assertThat(mainContent,containsString(artwork.getTitle()));
         assertThat(mainContent,containsString(artwork.getModelNickname()));
         assertThat(mainContent,containsString(artwork.getAuthorComment()));
-        ms.sendHtmlMailNotification("kasimok@163.com", mainContent);
+        ms.sendHtmlMailNotification(new String[]{"kasimok@163.com"}, mainContent);
     }
 
     @Test

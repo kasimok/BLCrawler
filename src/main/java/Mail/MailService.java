@@ -34,6 +34,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.StringWriter;
+import java.util.Calendar;
+import java.util.Date;
 
 public class MailService {
     private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
@@ -62,7 +64,7 @@ public class MailService {
         }
     }
 
-    public boolean sendHtmlMailNotification(String to, String text) throws MessagingException {
+    public boolean sendHtmlMailNotification(String[] to, String text) throws MessagingException {
         MimeMessage mimeMessage=this.mailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage,true,"UTF-8");
         messageHelper.setTo(to);
@@ -92,6 +94,7 @@ public class MailService {
         context.put("model",artwork.getModelNickname());
         context.put("comment",artwork.getAuthorComment());
         context.put("title",artwork.getTitle());
+        context.put("year", Calendar.getInstance().get(Calendar.YEAR));
         Template t = ve.getTemplate("src/main/resources/email_templates/email_html.vm");
         StringWriter writer = new StringWriter();
         t.merge(context, writer);
