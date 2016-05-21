@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Download configuration for crawler...
  */
-public class CrawlerConfig {
+public class ItokooCrawlerConfig {
 	private static final String DEFAULT_URL = "http://www.itokoo.com/read.php?tid=188";
 	private static final long DEFAULT_DOWNLOAD_INTERVAL = TimeUnit.HOURS.toMillis(1);
 	private String url = DEFAULT_URL;
@@ -53,7 +53,7 @@ public class CrawlerConfig {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 
-		CrawlerConfig that = (CrawlerConfig) o;
+		ItokooCrawlerConfig that = (ItokooCrawlerConfig) o;
 
 		if (downloadInterval != that.downloadInterval) return false;
 		if (!url.equals(that.url)) return false;

@@ -29,6 +29,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
 @Configuration
 @ComponentScan
@@ -50,11 +51,15 @@ public class CrawlerApp {
 
 
     @Autowired
-    private CrawlerConfig config;
+    private ItokooCrawlerConfig configForItokoo;
+
+    @Autowired
+    private ItokooCrawlerConfig configForFree;
+
 
     @PostConstruct
     public void postConstruct() {
-        LOG.info("starting crawler with config={},the site is now monitored", config);
+        LOG.info("starting crawler with configForItokoo={},the site is now monitored", configForItokoo);
     }
 
     @MessageEndpoint
@@ -63,39 +68,12 @@ public class CrawlerApp {
         /**
          * Send notificate if passed in artwork is not null;
          *
-         * @param artwork
+         * @param anchorList
          */
-        @ServiceActivator (inputChannel = "channel5")
-        public void sendNotification(Artwork artwork) {
-            if (download) {
-                RestTemplate restTemplate = new RestTemplate();
-                File artworkFolder = new File("Beauty" + File.separator + String.format("No.%03d", artwork.getArtId()));
-                if (!artworkFolder.exists() || !artworkFolder.isDirectory()) {
-                    LOG.debug(artworkFolder.getPath());
-                    artworkFolder.mkdirs();
-                }
-                artwork.getThumbnailImgList().parallelStream().forEach(o -> {
-                    String baseName = FilenameUtils.getBaseName(o.toString());
-                    String extension = FilenameUtils.getExtension(o.toString());
-                    boolean isJpeg = extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg");
-                    File img = new File(artworkFolder + File.separator + baseName + "." + extension);
-                    if (img.isFile() && img.exists()) {
-                        LOG.debug("Skipping existing file " + img.getPath());
-                    } else if (!isJpeg) {
-                        LOG.debug("Skipping none jpg file " + baseName + "." + extension);
-                    } else {
-                        byte[] imageBytes = restTemplate.getForObject(o.toString(), byte[].class);
-                        try {
-                            Files.write(img.toPath(), imageBytes);
-                            LOG.info("Downloaded new image: " + img.toPath());
-                        } catch (IOException e) {
-                            LOG.error("IOE");
-                        }
-                    }
-
-                });
-                LOG.debug("Done checking " + artworkFolder.getPath());
-
+        @ServiceActivator (inputChannel = "channel2-4")
+        public void sendNotification(List<String> anchorList) {
+            if (anchorList == null) {
+                LOG.info("Empty list");
             }
         }
     }
@@ -105,20 +83,37 @@ public class CrawlerApp {
         return new RestTemplate();
     }
 
+//    /**
+//     * Trigger the crawler for model image crawl job periodically.
+//     *
+//     * @return
+//     */
+//    @Bean
+//    public PollerMetadata downloadIndexTrigger() {
+//        PeriodicTrigger trigger = new PeriodicTrigger(configForItokoo.getDownloadInterval());
+//        trigger.setFixedRate(true);
+//        PollerMetadata pollerMetadata = new PollerMetadata();
+//        pollerMetadata.setTrigger(trigger);
+//        pollerMetadata.setMaxMessagesPerPoll(1);
+//        return pollerMetadata;
+//    }
+
     /**
      * Trigger the crawler for index job periodically.
      *
      * @return
      */
     @Bean
-    public PollerMetadata downloadIndexTrigger() {
-        PeriodicTrigger trigger = new PeriodicTrigger(config.getDownloadInterval());
+    public PollerMetadata downloadFreeTrigger() {
+        PeriodicTrigger trigger = new PeriodicTrigger(configForFree.getDownloadInterval());
         trigger.setFixedRate(true);
         PollerMetadata pollerMetadata = new PollerMetadata();
         pollerMetadata.setTrigger(trigger);
         pollerMetadata.setMaxMessagesPerPoll(1);
         return pollerMetadata;
     }
+
+
 
 
     @Bean
@@ -152,6 +147,7 @@ public class CrawlerApp {
             LOG.error("Bye.");
             System.exit(-1);
         }
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "4");
         PeriodicTrigger trigger = new PeriodicTrigger(10);
         trigger.setFixedRate(true);
         PollerMetadata pollerMetadata = new PollerMetadata();

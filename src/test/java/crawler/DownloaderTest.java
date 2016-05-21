@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -18,10 +19,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableAutoConfiguration
-@SpringApplicationConfiguration(classes = {CrawlerConfig.class,RestTemplate.class})
+@SpringApplicationConfiguration(classes = {ItokooCrawlerConfig.class,RestTemplate.class})
 public class DownloaderTest {
+    @Test
+    public void downloadFree() throws Exception {
+        Downloader downloader=new Downloader();
+        config.setUrl("http://www.beautyleg.com/");
+        downloader.setConfig(config);
+        downloader.setTemplate(template);
+
+        int max_id= downloader.downloadFree();
+        assertThat(max_id>0,is(true));
+
+    }
+
     @Autowired
-    private CrawlerConfig config;
+    private ItokooCrawlerConfig config;
     @Autowired
     private RestTemplate template;
     @Test

@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
 
 @MessageEndpoint
 public class AScraper {
-    private final Pattern patter = Pattern.compile("\\[Beautyleg\\][^a-z0-9]*(?<year>\\d{4})\\.(?<month>\\d{2})\\.(?<day>\\d{2})\\sNo\\.(?<id>\\d{3,5})\\s+(?<model>.{2,20})");
+    private final Pattern patterItokoo = Pattern.compile("\\[Beautyleg\\][^a-z0-9]*(?<year>\\d{4})\\.(?<month>\\d{2})\\.(?<day>\\d{2})\\sNo\\.(?<id>\\d{3,5})\\s+(?<model>.{2,20})");
     private final String ANCHOR_TEXT_PATTERN = "Beautyleg";
     private static final Logger LOG = LoggerFactory.getLogger(AScraper.class);
 
@@ -91,7 +91,7 @@ public class AScraper {
 
     @Filter (inputChannel = "channel2", outputChannel = "channel3")
     public boolean filter(Element payload) {
-        Matcher m = patter.matcher(payload.text());
+        Matcher m = patterItokoo.matcher(payload.text());
         if (m.find()) {
             return true;
         } else {
@@ -102,7 +102,7 @@ public class AScraper {
 
     @Transformer (inputChannel = "channel3", outputChannel = "channel4")
     public Artwork convert(Element payload) throws ParseException, MalformedURLException {
-        Matcher m = patter.matcher(payload.text());
+        Matcher m = patterItokoo.matcher(payload.text());
         if (m.find()) {
             String year = m.group("year");
             String month = m.group("month");
