@@ -52,19 +52,3 @@ BEGIN
   WHERE ActionId = OLD.ActionId;
 END;
 
--- Users
--- USERS
-CREATE TABLE IF NOT EXISTS users (
-  username VARCHAR(255) NOT NULL,
-  password VARCHAR(45)  NOT NULL,
-  enabled  TINYINT      NOT NULL DEFAULT 1,
-  PRIMARY KEY (username)
-);
-INSERT INTO users (username, password, enabled)
-VALUES ('mkyong', '123456', 1);
-INSERT INTO users (username, password, enabled)
-VALUES ('alex', '123456', 1);
-
-
-
-

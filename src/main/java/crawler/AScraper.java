@@ -24,8 +24,7 @@ import Mail.MailConfig;
 import Mail.MailService;
 import Models.Artwork;
 import Models.Model;
-import Reposities.ArtworkRepository;
-import Reposities.ModelRepository;
+import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -37,13 +36,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Splitter;
 import org.springframework.integration.annotation.Transformer;
-import org.thymeleaf.util.StringUtils;
 
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
@@ -57,7 +54,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @MessageEndpoint
-@ComponentScan ({"./"})
 public class AScraper {
     private final Pattern patter = Pattern.compile("\\[Beautyleg\\][^a-z0-9]*(?<year>\\d{4})\\.(?<month>\\d{2})\\.(?<day>\\d{2})\\sNo\\.(?<id>\\d{3,5})\\s+(?<model>.{2,20})");
     private final String ANCHOR_TEXT_PATTERN = "Beautyleg";
@@ -80,7 +76,7 @@ public class AScraper {
             public void head(org.jsoup.nodes.Node node, int depth) {
                 if (node instanceof org.jsoup.nodes.Element) {
                     Element e = (Element) node;
-                    if (StringUtils.containsIgnoreCase(e.text(), ANCHOR_TEXT_PATTERN, Locale.US)) {
+                    if (StringUtils.containsIgnoreCase(e.text(), ANCHOR_TEXT_PATTERN)) {
                         anchorList.add(e);
                     }
                 }

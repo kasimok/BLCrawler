@@ -24,6 +24,8 @@ import Models.Artwork;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.MailException;
@@ -97,6 +99,8 @@ public class MailService {
 
     public StringWriter genNotifyForNewArtworkPost(Artwork artwork) {
         VelocityEngine ve = new VelocityEngine();
+        ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+        ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
         ve.init();
         VelocityContext context = new VelocityContext();
         context.put("thumbnailList", artwork.getThumbnailImgList());
@@ -104,7 +108,7 @@ public class MailService {
         context.put("comment", artwork.getAuthorComment());
         context.put("title", artwork.getTitle());
         context.put("year", Calendar.getInstance().get(Calendar.YEAR));
-        Template t = ve.getTemplate("src/main/resources/email_templates/email_html.vm");
+        Template t = ve.getTemplate("templates/email_html.vm");
         StringWriter writer = new StringWriter();
         t.merge(context, writer);
         return writer;
