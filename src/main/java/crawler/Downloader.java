@@ -16,29 +16,44 @@
  * specific language governing permissions and limitations under the License.
  */
 package crawler;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.ResponseEntity;
-import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Poller;
 import org.springframework.web.client.RestTemplate;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 /**
  * Created by evilisn(kasimok@163.com)) on 2016/5/15.
  */
 @MessageEndpoint
 public class Downloader {
+    private static final Logger LOG = LoggerFactory.getLogger(Downloader.class);
+
     @Autowired
     private CrawlerConfig config;
 
-    @Autowired
     private RestTemplate template;
 
     @InboundChannelAdapter(value = "channel1", poller = @Poller("downloadIndexTrigger"))
     public ResponseEntity<String> download() {
         String url = config.getUrl();
-        ResponseEntity<String> entity = template.getForEntity(url, String.class);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Calendar cal = Calendar.getInstance();
+        LOG.info(">>> Wake up @"+dateFormat.format(cal.getTime()));
+        ApplicationContext context = new ClassPathXmlApplicationContext(
+                "SpringBeans.xml");
+        this.setTemplate((RestTemplate)context.getBean("restTemplate"));
+        ResponseEntity<String> entity = this.template.getForEntity(url, String.class);
         return entity;
     }
     public void setConfig(CrawlerConfig config) {

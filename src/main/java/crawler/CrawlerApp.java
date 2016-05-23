@@ -16,6 +16,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
@@ -68,7 +69,9 @@ public class CrawlerApp {
         @ServiceActivator (inputChannel = "channel5")
         public void sendNotification(Artwork artwork) {
             if (download) {
-                RestTemplate restTemplate = new RestTemplate();
+                ApplicationContext context = new ClassPathXmlApplicationContext(
+                        "SpringBeans.xml");
+                RestTemplate restTemplate= (RestTemplate) context.getBean("restTemplate");
                 File artworkFolder = new File("Beauty" + File.separator + String.format("No.%03d", artwork.getArtId()));
                 if (!artworkFolder.exists() || !artworkFolder.isDirectory()) {
                     LOG.debug(artworkFolder.getPath());
@@ -100,10 +103,6 @@ public class CrawlerApp {
         }
     }
 
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 
     /**
      * Trigger the crawler for index job periodically.

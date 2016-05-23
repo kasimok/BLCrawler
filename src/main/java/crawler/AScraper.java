@@ -59,7 +59,7 @@ public class AScraper {
     private final String ANCHOR_TEXT_PATTERN = "Beautyleg";
     private static final Logger LOG = LoggerFactory.getLogger(AScraper.class);
 
-    @Splitter (inputChannel = "channel1", outputChannel = "channel2")
+    @Splitter(inputChannel = "channel1", outputChannel = "channel2")
     public List<Element> scrape(ResponseEntity<String> payload) {
         String html = payload.getBody();
         final Document htmlDoc;
@@ -89,18 +89,20 @@ public class AScraper {
         return anchorList;
     }
 
-    @Filter (inputChannel = "channel2", outputChannel = "channel3")
+    @Filter(inputChannel = "channel2", outputChannel = "channel3")
     public boolean filter(Element payload) {
         Matcher m = patter.matcher(payload.text());
         if (m.find()) {
             return true;
-        } else {
+        } else if ( payload.text().startsWith("Beautyleg") ){
+            return false;
+        }else{
             LOG.error(String.format("Anchor text dose not match pattern:[%s]", payload.text()));
             return false;
         }
     }
 
-    @Transformer (inputChannel = "channel3", outputChannel = "channel4")
+    @Transformer(inputChannel = "channel3", outputChannel = "channel4")
     public Artwork convert(Element payload) throws ParseException, MalformedURLException {
         Matcher m = patter.matcher(payload.text());
         if (m.find()) {
@@ -139,12 +141,13 @@ public class AScraper {
 
     /**
      * Insert new art work and new model to db if not exist.
+     *
      * @param artwork
-     * @return  artwork if not exist in db
+     * @return artwork if not exist in db
      * @throws ParseException
      * @throws MalformedURLException
      */
-    @Transformer (inputChannel = "channel4", outputChannel = "channel5")
+    @Transformer(inputChannel = "channel4", outputChannel = "channel5")
     public Artwork processNew(Artwork artwork) throws ParseException, MalformedURLException {
         if (modelRepository.getModelByName(artwork.getModelNickname()) == null) {
             LOG.info(String.format("Model=%s,not exist in db,inserting", artwork.getModelNickname()));
@@ -152,7 +155,7 @@ public class AScraper {
                     artwork.getModelNickname()
             ));
         }
-        Artwork artwork_db =artworkRepository.getArtwork(artwork.getArtId());
+        Artwork artwork_db = artworkRepository.getArtwork(artwork.getArtId());
         if (artwork_db == null) {
             ThreadPageScraper threadPageScraper = new ThreadPageScraper();
             TreeMap<String, Object> results = threadPageScraper.scrape(artwork.getThreadAddress().toString());
@@ -172,7 +175,7 @@ public class AScraper {
             LOG.info("Artwork={},not exist in db,inserting", artwork);
             artworkRepository.insertArtwork(artwork);
             return artwork;
-        }else{
+        } else {
             return artwork_db;
         }
     }

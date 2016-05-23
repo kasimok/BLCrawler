@@ -95,7 +95,11 @@
             <artifactId>spring-web</artifactId>
             <version>4.2.6.RELEASE</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+        </dependency>
 
     </dependencies>
 
