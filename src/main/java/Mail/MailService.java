@@ -20,7 +20,6 @@ package Mail;
  * Created by evilisn(kasimok@163.com)) on 2016/5/18.
  */
 
-import Models.Artwork;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -37,6 +36,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.StringWriter;
 import java.util.Calendar;
+import java.util.List;
 
 public class MailService {
     private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
@@ -91,28 +91,31 @@ public class MailService {
         return true;
     }
 
+
     /**
      * Generate notification user about new post.
      *
      * @return
      */
 
-    public StringWriter genNotifyForNewArtworkPost(Artwork artwork) {
+    public StringWriter genNotifyForNewFreePost(List<String> imgUrls) {
         VelocityEngine ve = new VelocityEngine();
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
         ve.init();
         VelocityContext context = new VelocityContext();
-        context.put("thumbnailList", artwork.getThumbnailImgList());
-        context.put("model", artwork.getModelNickname());
-        context.put("comment", artwork.getAuthorComment());
-        context.put("title", artwork.getTitle());
+        context.put("thumbnailList", imgUrls);
+        context.put("model", "Free");
+        context.put("comment", "Free Post");
+        context.put("title", "New Free Post");
         context.put("year", Calendar.getInstance().get(Calendar.YEAR));
         Template t = ve.getTemplate("templates/email_html.vm");
         StringWriter writer = new StringWriter();
         t.merge(context, writer);
         return writer;
     }
+
+
 
     /**
      * check if the email service is alive.

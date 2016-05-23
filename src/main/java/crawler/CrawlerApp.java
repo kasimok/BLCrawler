@@ -2,8 +2,6 @@ package crawler;
 
 import Mail.MailConfig;
 import Mail.MailService;
-import Models.Artwork;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
@@ -26,9 +25,6 @@ import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 @Configuration
@@ -51,15 +47,12 @@ public class CrawlerApp {
 
 
     @Autowired
-    private ItokooCrawlerConfig configForItokoo;
-
-    @Autowired
-    private ItokooCrawlerConfig configForFree;
+    private FreeCrawlerConfig configForFree;
 
 
     @PostConstruct
     public void postConstruct() {
-        LOG.info("starting crawler with config={},the site is now monitored", configForFree);
+        LOG.info("Starting crawler with config={},the site is now monitored", configForFree);
     }
 
     @MessageEndpoint
@@ -72,31 +65,30 @@ public class CrawlerApp {
          */
         @ServiceActivator (inputChannel = "channel2-4")
         public void sendNotification(List<String> anchorList) {
-            if (anchorList == null) {
+            if (anchorList == null||anchorList.size()==0) {
                 LOG.info("Empty list");
+            }else{
+                ApplicationContext ctx =
+                        new AnnotationConfigApplicationContext(MailConfig.class);
+                MailService mailService = ctx.getBean(MailService.class);
+                try {
+                    mailService.sendHtmlMailNotification("kasimok@163.com".split(";"), String.valueOf(mailService.genNotifyForNewFreePost(anchorList)));
+                    LOG.info("Notification Sent!");
+                } catch (javax.mail.MessagingException e) {
+                    LOG.error("Fail to send mail");
+                    e.printStackTrace();
+                }
             }
         }
     }
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        ApplicationContext context = new ClassPathXmlApplicationContext(
+                "SpringBeans.xml");
+        return (RestTemplate)context.getBean("restTemplate");
     }
 
-//    /**
-//     * Trigger the crawler for model image crawl job periodically.
-//     *
-//     * @return
-//     */
-//    @Bean
-//    public PollerMetadata downloadIndexTrigger() {
-//        PeriodicTrigger trigger = new PeriodicTrigger(configForItokoo.getDownloadInterval());
-//        trigger.setFixedRate(true);
-//        PollerMetadata pollerMetadata = new PollerMetadata();
-//        pollerMetadata.setTrigger(trigger);
-//        pollerMetadata.setMaxMessagesPerPoll(1);
-//        return pollerMetadata;
-//    }
 
     /**
      * Trigger the crawler for index job periodically.

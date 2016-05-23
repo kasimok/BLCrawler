@@ -32,10 +32,11 @@ import org.jsoup.select.NodeVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.integration.annotation.*;
+import org.springframework.integration.annotation.Filter;
+import org.springframework.integration.annotation.MessageEndpoint;
+import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.integration.annotation.Splitter;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -55,6 +56,8 @@ import java.util.regex.Pattern;
 
 @MessageEndpoint
 public class BScraper {
+    @Autowired
+    RestTemplate restTemplate;
     private static final Logger LOG = LoggerFactory.getLogger(BScraper.class);
 
     @Splitter (inputChannel = "channel2-1", outputChannel = "channel2-2")
@@ -74,11 +77,7 @@ public class BScraper {
 
     @Filter (inputChannel = "channel2-2", outputChannel = "channel2-3")
     public boolean filter(URL url) {
-        if (url==null) {
-            return false;
-        }else{
-            return true;
-        }
+        return true;
     }
 
     @Autowired
@@ -88,7 +87,6 @@ public class BScraper {
     public List<String> processPage(URL url) {
         LOG.info(">>>Processing URL: "+url.toString());
         final Pattern imgPattern = Pattern.compile("/(?<id>\\d{1,4})\\.jpg");
-        RestTemplate template = new RestTemplate();
         int ART_WORK_ID = -1;
         try {
             ART_WORK_ID = Integer.parseInt(url.getQuery().split("=")[1]);
@@ -103,7 +101,7 @@ public class BScraper {
         }
         ResponseEntity<String> entity;
         try {
-            entity = template.getForEntity(url.toString(), String.class);
+            entity = restTemplate.getForEntity(url.toString(), String.class);
         } catch (RestClientException e) {
             LOG.error("Forbidden resource.");
             return new ArrayList<>();
@@ -122,14 +120,14 @@ public class BScraper {
                         Element e = (Element) node;
                         Matcher m = imgPattern.matcher(e.attr("href"));
                         if (m.find()) {
-//                            if (null == imageReposity.getImage(finalART_WORK_ID, Integer.parseInt(m.group("id")))) {
+                            if (null == imageReposity.getImage(finalART_WORK_ID, Integer.parseInt(m.group("id")))) {
                                 //Download New
                                 anchorList.add(e.attr("href"));
-//                            } else {
+                            } else {
 //                                Existed...
-//                            }
+                            }
                         } else {
-                            LOG.info(e + " not match,SKIP!");
+                            LOG.debug(e + " not match,SKIP!");
                         }
                     }
                 }
@@ -139,7 +137,6 @@ public class BScraper {
                 }
             });
             anchorList.parallelStream().forEach(o -> {
-                RestTemplate restTemplate = new RestTemplate();
                 String baseName = FilenameUtils.getBaseName(o.toString());
                 String extension = FilenameUtils.getExtension(o.toString());
                 boolean isJpeg = extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg");
@@ -149,11 +146,21 @@ public class BScraper {
                 } else if (!isJpeg) {
                     LOG.debug("Skipping none jpg file " + baseName + "." + extension);
                 } else {
-                    LOG.info("Downloading new image: " + img.toPath() + ",URL " + o);
-                    byte[] imageBytes = restTemplate.getForObject(o.toString(), byte[].class);
+                    LOG.info("Downloading new image: "+ "URL " + o);
+                    byte[] imageBytes = new byte[0];
+                    try {
+                        imageBytes = restTemplate.getForObject(o.toString(), byte[].class);
+                    } catch (RestClientException e) {
+                        LOG.error(e.getMessage());
+                        if (img.delete()) {
+                            LOG.info("Deleted corrupt file...");
+                        }else{
+                            LOG.error("Failed to delete corrupt file...");
+                        }
+                    }
                     try {
                         Files.write(img.toPath(), imageBytes);
-                        LOG.info("Downloaded new image: " + img.toPath() + ",URL " + o + " Size:" + FileUtils.byteCountToDisplaySize(imageBytes.length));
+                        LOG.info("Downloaded new image: " + img.toPath() +" Size:" + FileUtils.byteCountToDisplaySize(imageBytes.length));
                         Image image = new Image();
                         MessageDigest md = MessageDigest.getInstance("SHA-1");
                         image.setSha1(byteArray2Hex(md.digest(imageBytes)));

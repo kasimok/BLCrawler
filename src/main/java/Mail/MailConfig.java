@@ -59,7 +59,7 @@ public class MailConfig {
     public SimpleMailMessage templateMessage() {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setFrom("subscribe@beautyleg.tw");
-        simpleMailMessage.setSubject("New Subscribe");
+        simpleMailMessage.setSubject("New Free Subscribe");
         return simpleMailMessage;
     }
     @Bean

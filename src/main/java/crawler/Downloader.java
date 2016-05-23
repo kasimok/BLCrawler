@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations under the License.
  */
 package crawler;
-import org.apache.commons.lang.StringUtils;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,7 +33,10 @@ import org.springframework.integration.annotation.Poller;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -46,21 +49,15 @@ import java.util.regex.Pattern;
 public class Downloader {
     private static final Logger LOG = LoggerFactory.getLogger(Downloader.class);
     @Autowired
-    private ItokooCrawlerConfig config;
-
-    @Autowired
     private FreeCrawlerConfig freeConfig;
     @Autowired
     private RestTemplate template;
 
-//    @InboundChannelAdapter(value = "channel1", poller = @Poller("downloadIndexTrigger"))
-    public ResponseEntity<String> download() {
-        String url = config.getUrl();
-        ResponseEntity<String> entity = template.getForEntity(url, String.class);
-        return entity;
-    }
     @InboundChannelAdapter(value = "channel2-1", poller = @Poller("downloadFreeTrigger"))
     public int downloadFree() {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Calendar cal = Calendar.getInstance();
+        LOG.info(">>> Wake up @"+dateFormat.format(cal.getTime()));
         String url = freeConfig.getUrl();
         final Pattern patterFree = Pattern.compile("Free\\s+download\\sVol.(?<id>\\d{1,4})");
         ResponseEntity<String> entity = template.getForEntity(url, String.class);
@@ -93,9 +90,6 @@ public class Downloader {
             }
         });
         return Collections.max(ids);
-    }
-    public void setConfig(ItokooCrawlerConfig config) {
-        this.config = config;
     }
 
     public void setTemplate(RestTemplate template) {
