@@ -62,7 +62,6 @@ public class Downloader {
     @InboundChannelAdapter(value = "channel2-1", poller = @Poller("downloadFreeTrigger"))
     public int downloadFree() {
         String url = freeConfig.getUrl();
-        final String ANCHOR_TEXT_PATTERN = "Free";
         final Pattern patterFree = Pattern.compile("Free\\s+download\\sVol.(?<id>\\d{1,4})");
         ResponseEntity<String> entity = template.getForEntity(url, String.class);
         String html = entity.getBody();

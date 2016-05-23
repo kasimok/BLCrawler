@@ -59,7 +59,7 @@ public class CrawlerApp {
 
     @PostConstruct
     public void postConstruct() {
-        LOG.info("starting crawler with configForItokoo={},the site is now monitored", configForItokoo);
+        LOG.info("starting crawler with config={},the site is now monitored", configForFree);
     }
 
     @MessageEndpoint

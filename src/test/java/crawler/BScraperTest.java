@@ -2,10 +2,18 @@ package crawler;
 
 import org.junit.Test;
 
+import java.net.URL;
+
 /**
  * Created by evilisn(kasimok@163.com)) on 2016/5/17.
  */
 public class BScraperTest {
+    @Test
+    public void processPage() throws Exception {
+        URL url = new URL("http://www.beautyleg.com/photo/show.php?no=6");
+        BScraper bScraper = new BScraper();
+        System.out.println(bScraper.processPage(url).toString());
+    }
 
     @org.junit.Before
     public void setUp() throws Exception {

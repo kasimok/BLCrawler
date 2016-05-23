@@ -32,11 +32,11 @@ import org.jsoup.select.NodeVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.integration.annotation.Filter;
-import org.springframework.integration.annotation.MessageEndpoint;
-import org.springframework.integration.annotation.Splitter;
-import org.springframework.integration.annotation.Transformer;
+import org.springframework.integration.annotation.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -74,14 +74,19 @@ public class BScraper {
 
     @Filter (inputChannel = "channel2-2", outputChannel = "channel2-3")
     public boolean filter(URL url) {
-        return true;
+        if (url==null) {
+            return false;
+        }else{
+            return true;
+        }
     }
 
     @Autowired
     private ImageReposity imageReposity;
 
-    @Transformer (inputChannel = "channel2-3", outputChannel = "channel2-4")
+    @ServiceActivator (inputChannel = "channel2-3", outputChannel = "channel2-4")
     public List<String> processPage(URL url) {
+        LOG.info(">>>Processing URL: "+url.toString());
         final Pattern imgPattern = Pattern.compile("/(?<id>\\d{1,4})\\.jpg");
         RestTemplate template = new RestTemplate();
         int ART_WORK_ID = -1;
@@ -96,8 +101,15 @@ public class BScraper {
             artworkFolder.mkdirs();
             //New post
         }
-        ResponseEntity<String> entity = template.getForEntity(url.toString(), String.class);
+        ResponseEntity<String> entity;
+        try {
+            entity = template.getForEntity(url.toString(), String.class);
+        } catch (RestClientException e) {
+            LOG.error("Forbidden resource.");
+            return new ArrayList<>();
+        }
         String html = entity.getBody();
+
         final Document htmlDoc = Jsoup.parse(html);
         final Elements imageElements = htmlDoc.select("table.table_all a");
         if (imageElements.size() > 0) {
@@ -110,14 +122,14 @@ public class BScraper {
                         Element e = (Element) node;
                         Matcher m = imgPattern.matcher(e.attr("href"));
                         if (m.find()) {
-                            if (null == imageReposity.getImage(finalART_WORK_ID, Integer.parseInt(m.group("id")))) {
+//                            if (null == imageReposity.getImage(finalART_WORK_ID, Integer.parseInt(m.group("id")))) {
                                 //Download New
                                 anchorList.add(e.attr("href"));
-                            } else {
-                                //Existed...
-                            }
+//                            } else {
+//                                Existed...
+//                            }
                         } else {
-                            LOG.info(e.attr("href") + " not match,SKIP!");
+                            LOG.info(e + " not match,SKIP!");
                         }
                     }
                 }
