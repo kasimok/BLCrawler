@@ -20,8 +20,6 @@ package crawler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -42,6 +40,7 @@ public class Downloader {
     @Autowired
     private CrawlerConfig config;
 
+    @Autowired
     private RestTemplate template;
 
     @InboundChannelAdapter(value = "channel1", poller = @Poller("downloadIndexTrigger"))
@@ -50,9 +49,7 @@ public class Downloader {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Calendar cal = Calendar.getInstance();
         LOG.info(">>> Wake up @"+dateFormat.format(cal.getTime()));
-        ApplicationContext context = new ClassPathXmlApplicationContext(
-                "SpringBeans.xml");
-        this.setTemplate((RestTemplate)context.getBean("restTemplate"));
+
         ResponseEntity<String> entity = this.template.getForEntity(url, String.class);
         return entity;
     }

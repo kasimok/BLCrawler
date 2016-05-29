@@ -147,7 +147,7 @@ public class CrawlerApp {
                 new AnnotationConfigApplicationContext(MailConfig.class);
         MailService ms = ctx.getBean(MailService.class);
         if (!ms.checkMailServiceAvailable()) {
-            LOG.error("Failed to connect to smtp server, shutting down.");
+            LOG.error("Failed to connect to SMTP server, shutting down.");
             LOG.error("Bye.");
             System.exit(-1);
         }
@@ -156,5 +156,11 @@ public class CrawlerApp {
         PollerMetadata pollerMetadata = new PollerMetadata();
         pollerMetadata.setTrigger(trigger);
         return pollerMetadata;
+    }
+    @Bean
+    public RestTemplate restTemplate() {
+        ApplicationContext context = new ClassPathXmlApplicationContext(
+                "SpringBeans.xml");
+        return ((RestTemplate)context.getBean("restTemplate"));
     }
 }
